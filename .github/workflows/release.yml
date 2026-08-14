@@ -27,7 +27,7 @@ jobs:
       # Spring Initializr가 만든 기본 Spring Boot 테스트는 배포 빌드에서 실행하지 않습니다.
       - name: Build fat JAR
         shell: pwsh
-        run: mvn --batch-mode -DskipTests -Dspring-boot.repackage.skip=true clean package
+        run: mvn --batch-mode "-DskipTests" "-Dspring-boot.repackage.skip=true" clean package
 
       - name: Prepare jpackage input
         shell: pwsh
