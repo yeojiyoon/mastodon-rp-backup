@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="
+             http://maven.apache.org/POM/4.0.0
+             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.2</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.jiyoon</groupId>
+    <artifactId>mastodon-rp-backup</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+
+    <name>mastodon-rp-backup</name>
+    <description>Mastodon RP backup program</description>
+
+    <properties>
+        <java.version>21</java.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.18.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.4.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>21.0.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+                이 프로젝트는 Spring Initializr로 생성만 됐을 뿐
+                실제로는 순수 JavaFX 앱(javafx:run으로 실행)이므로
+                spring-boot-maven-plugin의 repackage는 사용하지 않습니다.
+                BOOT-INF 중첩 jar 구조는 JavaFX classloading과
+                충돌할 수 있어 끄고, 아래 shade 플러그인으로
+                평범한(중첩 없는) 실행 가능 fat jar를 만듭니다.
+            -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.8</version>
+                <configuration>
+                    <mainClass>com.jiyoon.mastodonrpbackup.MastodonRpBackupLauncher</mainClass>
+                </configuration>
+            </plugin>
+
+            <!--
+                javafx:run으로 늘 실행하던 것과 동일한 클래스패스
+                구조를 유지하는 평범한 fat jar를 만듭니다.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.jiyoon.mastodonrpbackup.MastodonRpBackupLauncher</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--
+                위 shade 결과물(target/<finalName>.jar)을 입력으로 받아
+                OS별 네이티브 실행 파일을 만듭니다.
+            -->
+            <plugin>
+                <groupId>org.panteleyev</groupId>
+                <artifactId>jpackage-maven-plugin</artifactId>
+                <version>1.6.5</version>
+                <configuration>
+                    <name>MastodonRpBackup</name>
+                    <appVersion>1.0.0</appVersion>
+                    <vendor>yeojiyoon</vendor>
+                    <destination>target/dist</destination>
+                    <input>target</input>
+                    <mainJar>${project.build.finalName}.jar</mainJar>
+                    <mainClass>com.jiyoon.mastodonrpbackup.MastodonRpBackupLauncher</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
